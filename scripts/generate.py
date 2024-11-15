@@ -127,7 +127,16 @@ def plot_mead_info(df: pd.DataFrame, id: str, id_name_map: IdNameMapper):
 
 def plot_category(df: pd.DataFrame, category: str, id_name_map: IdNameMapper):
     filtered_df = pd.DataFrame(
-        df.filter(["Id"] + [category]).groupby("Id")[category].apply(list).to_dict()
+        dict(
+            [
+                (k, pd.Series(v))
+                for k, v in df.filter(["Id"] + [category])
+                .groupby("Id")[category]
+                .apply(list)
+                .to_dict()
+                .items()
+            ]
+        )
     ).rename(mapper=id_name_map, axis=1)
 
     plt.figure()
