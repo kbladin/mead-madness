@@ -41,12 +41,13 @@ class IdNameMapper(collections.abc.Mapping):
 
 
 def clean_split(string):
-    """Example input "hej,  Hej, haj"
+    """Example input "hej,  Hej; haj"
     Example output: ["hej", "Hej", "haj"]
     """
     if not type(string) is str:
         return []
-    return [" ".join(x.split()) for x in string.split(",")]
+    import re
+    return [" ".join(x.split()) for x in re.split(r"[,;]", string) if x.strip()]
 
 
 def collect_mead_data(df: pd.DataFrame, id: int, id_name_map: IdNameMapper) -> dict:
@@ -742,11 +743,10 @@ def build_mead_slide(slide_index: int, mead: dict) -> tuple:
         items = "".join(f"<li>{t}</li>" for t in mead["other"])
         other_html = f'<div><div class="section-heading">Övrigt</div><ul class="other-list">{items}</ul></div>'
 
-    # Overall rating – stars (scale 1-9 mapped to 0-10)
+    # Overall rating – 10 stars matching the 1–10 scale directly
     overall_vals = mead["overall"]
     overall_mean = _mean(overall_vals)
-    # Map 1–9 onto 0–10 stars linearly
-    stars_fill = (overall_mean - 1) / 8 * 10  # float 0..10
+    stars_fill = overall_mean  # score 7.5 → 7.5 out of 10 stars
 
     star_svgs = []
     for i in range(10):
