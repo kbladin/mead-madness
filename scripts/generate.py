@@ -440,17 +440,30 @@ _HTML_TEMPLATE = """\
   }}
 
   .dots {{
+    position: relative;
+    width: 120px;
+    height: 16px;
+    flex-shrink: 0;
+    overflow: hidden;
+    /* fade edges */
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 20%, black 80%, transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0%, black 20%, black 80%, transparent 100%);
+  }}
+
+  .dots-track {{
+    position: absolute;
     display: flex;
-    gap: 5px;
+    gap: 8px;
     align-items: center;
-    max-width: 240px;
-    flex-wrap: wrap;
-    justify-content: center;
+    height: 100%;
+    transition: transform 0.4s cubic-bezier(0.4,0,0.2,1);
+    /* will be translated by JS so active dot is centred */
   }}
 
   .dot {{
     width: 6px;
     height: 6px;
+    min-width: 6px;
     border-radius: 50%;
     background: var(--border);
     cursor: pointer;
@@ -458,15 +471,16 @@ _HTML_TEMPLATE = """\
     flex-shrink: 0;
   }}
 
-  .dot.active {{ background: var(--amber); transform: scale(1.4); }}
-  .dot:hover {{ background: var(--amber-lt); }}
+  .dot.active {{ background: var(--amber); transform: scale(1.6); }}
+  .dot:hover  {{ background: var(--amber-lt); }}
 
   /* ── MOBILE RESPONSIVE ── */
   @media (max-width: 700px) {{
     html, body {{ font-size: 15px; }}
 
+    /* Nav is fixed-height; give slides enough bottom padding to never overlap */
     .slide {{
-      padding-bottom: 4rem;
+      padding-bottom: 4.5rem;
     }}
 
     .slide-header {{
@@ -523,13 +537,6 @@ _HTML_TEMPLATE = """\
     /* Title slide */
     .title-inner h1 {{ font-size: clamp(1.8rem, 8vw, 3rem); }}
 
-    /* Nav */
-    nav {{
-      padding: 0.4rem 0.6rem;
-      gap: 0.3rem;
-    }}
-
-    .dots {{ max-width: 160px; }}
     .page-counter {{ min-width: 50px; font-size: 0.75rem; }}
   }}
 </style>
@@ -544,7 +551,7 @@ _HTML_TEMPLATE = """\
 
 <nav>
   <button id="btn-prev" onclick="navigate(-1)">&#8592;</button>
-  <div class="dots" id="dots"></div>
+  <div class="dots" id="dots"><div class="dots-track" id="dots-track"></div></div>
   <span class="page-counter" id="counter"></span>
   <button id="btn-next" onclick="navigate(1)">&#8594;</button>
 </nav>
@@ -560,12 +567,18 @@ const counter = document.getElementById('counter');
 const btnPrev = document.getElementById('btn-prev');
 const btnNext = document.getElementById('btn-next');
 
-// Build dots
+const dotsTrack = document.getElementById('dots-track');
+const DOT_SIZE = 6;
+const DOT_GAP  = 8;
+const DOT_STEP = DOT_SIZE + DOT_GAP; // px per dot
+const DOTS_W   = 120; // must match CSS .dots width
+
+// Build dots (one per slide) inside the track
 for (let i = 0; i < total; i++) {{
   const d = document.createElement('div');
-  d.className = 'dot' + (i === 0 ? ' active' : '');
+  d.className = 'dot';
   d.onclick = () => goTo(i);
-  dotsEl.appendChild(d);
+  dotsTrack.appendChild(d);
 }}
 
 function updateNav() {{
@@ -573,7 +586,14 @@ function updateNav() {{
   counter.textContent = (current + 1) + ' / ' + total;
   btnPrev.disabled = current === 0;
   btnNext.disabled = current === total - 1;
-  document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === current));
+
+  // Slide track so active dot is always centred in the container
+  const centre = DOTS_W / 2 - DOT_SIZE / 2;
+  dotsTrack.style.transform = `translateX(${{centre - current * DOT_STEP}}px)`;
+
+  dotsTrack.querySelectorAll('.dot').forEach((d, i) => {{
+    d.classList.toggle('active', i === current);
+  }});
 }}
 
 function goTo(n) {{
@@ -601,6 +621,43 @@ document.addEventListener('touchend',   e => {{
 
 // Chart.js initialisation (lazy – only render when slide is first visited)
 const rendered = new Set();
+
+// Custom plugin: draw error bars from dataset.errorBars = {{ "0": {{plus, minus}}, ... }}
+const errorBarPlugin = {{
+  id: 'errorBars',
+  afterDraw(chart) {{
+    const {{ ctx }} = chart;
+    const yScale = chart.scales.y;
+    if (!yScale) return;
+    ctx.save();
+    ctx.strokeStyle = 'rgba(240,230,208,0.8)';
+    ctx.lineWidth = 2;
+    const capWidth = 5;
+    chart.data.datasets.forEach((dataset, di) => {{
+      if (!dataset.errorBars) return;
+      const meta = chart.getDatasetMeta(di);
+      if (meta.hidden) return;
+      Object.entries(dataset.errorBars).forEach(([i, bar]) => {{
+        const el = meta.data[+i];
+        if (!el) return;
+        const x = el.x;
+        const val = dataset.data[+i];
+        if (val == null) return;
+        const yTop = yScale.getPixelForValue(Math.min(9, val + bar.plus));
+        const yBot = yScale.getPixelForValue(Math.max(1, val - bar.minus));
+        ctx.beginPath();
+        ctx.moveTo(x, yTop); ctx.lineTo(x, yBot);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x - capWidth, yTop); ctx.lineTo(x + capWidth, yTop);
+        ctx.moveTo(x - capWidth, yBot); ctx.lineTo(x + capWidth, yBot);
+        ctx.stroke();
+      }});
+    }});
+    ctx.restore();
+  }}
+}};
+Chart.register(errorBarPlugin);
 
 const CHART_DEFAULTS = {{
   color: '#f0e6d0',
@@ -743,13 +800,13 @@ def build_mead_slide(slide_index: int, mead: dict) -> tuple:
         items = "".join(f"<li>{t}</li>" for t in mead["other"])
         other_html = f'<div><div class="section-heading">Övrigt</div><ul class="other-list">{items}</ul></div>'
 
-    # Overall rating – 10 stars matching the 1–10 scale directly
+    # Overall rating – 9 stars matching the 1–9 scale directly
     overall_vals = mead["overall"]
     overall_mean = _mean(overall_vals)
-    stars_fill = overall_mean  # score 7.5 → 7.5 out of 10 stars
+    stars_fill = overall_mean  # score 7.5 → 7.5 out of 9 stars
 
     star_svgs = []
-    for i in range(10):
+    for i in range(9):
         filled = max(0.0, min(1.0, stars_fill - i))  # fraction 0..1 for this star
         clip_id = f"sc-{slide_index}-{i}"
         # Full star path (standard 5-point, 20x20 viewBox)
