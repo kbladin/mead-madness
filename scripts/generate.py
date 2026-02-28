@@ -138,7 +138,7 @@ _HTML_TEMPLATE = """\
     background: var(--bg);
     color: var(--cream);
     font-family: 'Crimson Pro', Georgia, serif;
-    font-size: 18px;
+    font-size: clamp(18px, 2vw, 36px);
     overflow: hidden;
   }}
 
@@ -210,12 +210,12 @@ _HTML_TEMPLATE = """\
   .tally-item {{ display: flex; flex-direction: column; align-items: center; }}
   .tally-item .num {{
     font-family: 'IM Fell English', serif;
-    font-size: 2.8rem;
+    font-size: clamp(2rem, 4vw, 4rem);
     color: var(--amber);
     line-height: 1;
   }}
   .tally-item .lbl {{
-    font-size: 0.8rem;
+    font-size: clamp(0.7rem, 1vw, 1.1rem);
     color: var(--muted);
     text-transform: uppercase;
     letter-spacing: 0.12em;
@@ -235,7 +235,7 @@ _HTML_TEMPLATE = """\
 
   .slide-number {{
     font-family: 'IM Fell English', serif;
-    font-size: 2.8rem;
+    font-size: clamp(2rem, 3vw, 4rem);
     color: var(--amber-dim);
     line-height: 1;
     opacity: 0.55;
@@ -243,7 +243,7 @@ _HTML_TEMPLATE = """\
 
   .slide-name {{
     font-family: 'IM Fell English', serif;
-    font-size: clamp(1.4rem, 2.5vw, 2.2rem);
+    font-size: clamp(1.4rem, 2.5vw, 3rem);
     color: var(--amber-lt);
     text-shadow: 0 0 20px rgba(200,137,42,0.25);
   }}
@@ -252,7 +252,7 @@ _HTML_TEMPLATE = """\
   .mead-body {{
     flex: 1;
     display: grid;
-    grid-template-columns: 1fr 340px;
+    grid-template-columns: 1fr clamp(320px, 30vw, 580px);
     min-height: 0;
   }}
 
@@ -285,7 +285,7 @@ _HTML_TEMPLATE = """\
   }}
 
   .overall-label {{
-    font-size: 0.8rem;
+    font-size: clamp(0.8rem, 1.2vw, 1.6rem);
     color: var(--muted);
     text-transform: uppercase;
     letter-spacing: 0.1em;
@@ -300,8 +300,8 @@ _HTML_TEMPLATE = """\
 
   .star-wrap {{
     position: relative;
-    width: 1.3rem;
-    height: 1.3rem;
+    width: clamp(1.2rem, 2vw, 2.8rem);
+    height: clamp(1.2rem, 2vw, 2.8rem);
     flex-shrink: 0;
   }}
 
@@ -312,7 +312,7 @@ _HTML_TEMPLATE = """\
 
   .overall-value {{
     font-family: 'IM Fell English', serif;
-    font-size: 1.4rem;
+    font-size: clamp(1.4rem, 2.5vw, 3.2rem);
     color: var(--amber-lt);
     min-width: 2.5rem;
     text-align: right;
@@ -334,7 +334,7 @@ _HTML_TEMPLATE = """\
 
   .section-heading {{
     font-family: 'IM Fell English', serif;
-    font-size: 0.95rem;
+    font-size: clamp(0.85rem, 1.3vw, 1.8rem);
     color: var(--amber);
     text-transform: uppercase;
     letter-spacing: 0.12em;
@@ -354,7 +354,7 @@ _HTML_TEMPLATE = """\
   .tag-list {{ display: flex; flex-wrap: wrap; gap: 0.35rem; }}
 
   .tag {{
-    font-size: 0.82rem;
+    font-size: clamp(0.85rem, 1.2vw, 1.6rem);
     padding: 0.18em 0.6em;
     border-radius: 3px;
     font-style: italic;
@@ -376,7 +376,7 @@ _HTML_TEMPLATE = """\
 
   .other-list {{ list-style: none; display: flex; flex-direction: column; gap: 0.4rem; }}
   .other-list li {{
-    font-size: 0.88rem;
+    font-size: clamp(0.85rem, 1.2vw, 1.6rem);
     color: var(--muted);
     font-style: italic;
     padding-left: 1em;
@@ -417,7 +417,7 @@ _HTML_TEMPLATE = """\
     background: none;
     border: none;
     color: var(--amber);
-    font-size: 1.1rem;
+    font-size: clamp(1rem, 1.5vw, 1.8rem);
     cursor: pointer;
     padding: 0.2rem 0.55rem;
     border-radius: 50px;
@@ -603,10 +603,10 @@ const rendered = new Set();
 
 const CHART_DEFAULTS = {{
   color: '#f0e6d0',
-  plugins: {{ legend: {{ labels: {{ color: '#a08870', font: {{ family: 'Crimson Pro, Georgia, serif', size: 13 }} }} }} }},
+  plugins: {{ legend: {{ labels: {{ color: '#a08870', font: {{ family: 'Crimson Pro, Georgia, serif', size: Math.max(13, Math.round(window.innerWidth * 0.012)) }} }} }} }},
   scales: {{
-    x: {{ ticks: {{ color: '#a08870', font: {{ family: 'Crimson Pro, Georgia, serif', size: 12 }} }}, grid: {{ color: 'rgba(92,61,30,0.4)' }}, border: {{ color: '#5c3d1e' }} }},
-    y: {{ ticks: {{ color: '#a08870', font: {{ family: 'Crimson Pro, Georgia, serif', size: 12 }} }}, grid: {{ color: 'rgba(92,61,30,0.4)' }}, border: {{ color: '#5c3d1e' }}, min: 1, max: 9 }}
+    x: {{ ticks: {{ color: '#a08870', font: {{ family: 'Crimson Pro, Georgia, serif', size: Math.max(12, Math.round(window.innerWidth * 0.011)) }} }}, grid: {{ color: 'rgba(92,61,30,0.4)' }}, border: {{ color: '#5c3d1e' }} }},
+    y: {{ ticks: {{ color: '#a08870', font: {{ family: 'Crimson Pro, Georgia, serif', size: Math.max(12, Math.round(window.innerWidth * 0.011)) }} }}, grid: {{ color: 'rgba(92,61,30,0.4)' }}, border: {{ color: '#5c3d1e' }}, min: 1, max: 9 }}
   }}
 }};
 
@@ -903,7 +903,7 @@ _INDEX_TEMPLATE = """\
     background: radial-gradient(ellipse 80% 50% at 50% 0%, #3d2508 0%, transparent 55%), var(--bg);
     color: var(--cream);
     font-family: 'Crimson Pro', Georgia, serif;
-    font-size: clamp(16px, 2vw, 22px);
+    font-size: clamp(18px, 2.2vw, 32px);
   }}
 
   body {{
@@ -911,8 +911,8 @@ _INDEX_TEMPLATE = """\
     grid-template-columns: 1fr 1fr;
     grid-template-rows: auto 1fr auto;
     min-height: 100vh;
-    padding: clamp(2rem, 5vw, 5rem) clamp(2rem, 6vw, 8rem);
-    gap: clamp(1.5rem, 3vw, 3rem) clamp(3rem, 6vw, 8rem);
+    padding: clamp(2rem, 5vw, 6rem) clamp(2rem, 6vw, 10rem);
+    gap: clamp(1.5rem, 3vw, 4rem) clamp(3rem, 6vw, 10rem);
   }}
 
   /* ── TITLE (spans full width) ── */
@@ -934,11 +934,11 @@ _INDEX_TEMPLATE = """\
   .col-left {{
     display: flex;
     flex-direction: column;
-    gap: clamp(1.2rem, 2.5vw, 2.5rem);
+    gap: clamp(1.2rem, 2.5vw, 3rem);
   }}
 
   .section-label {{
-    font-size: 0.75em;
+    font-size: 0.7em;
     text-transform: uppercase;
     letter-spacing: 0.14em;
     color: var(--amber-dim);
@@ -949,7 +949,7 @@ _INDEX_TEMPLATE = """\
   .btn-results {{
     display: inline-block;
     font-family: 'IM Fell English', serif;
-    font-size: clamp(1.1rem, 2.5vw, 2rem);
+    font-size: clamp(1.2rem, 2.8vw, 3rem);
     color: var(--amber-lt);
     text-decoration: none;
     border-bottom: 1px solid var(--amber-dim);
@@ -959,7 +959,7 @@ _INDEX_TEMPLATE = """\
   .btn-results:hover {{ color: #fff; border-color: var(--amber-lt); }}
 
   .not-ready {{
-    font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+    font-size: clamp(1rem, 2vw, 2rem);
     color: var(--muted);
     font-style: italic;
   }}
@@ -968,7 +968,7 @@ _INDEX_TEMPLATE = """\
   .btn-form {{
     display: inline-block;
     font-family: 'Crimson Pro', serif;
-    font-size: clamp(1rem, 1.8vw, 1.3rem);
+    font-size: clamp(1rem, 1.8vw, 1.8rem);
     font-weight: 600;
     color: #1a0e05;
     background: var(--amber);
@@ -994,7 +994,7 @@ _INDEX_TEMPLATE = """\
   .prev-list a {{
     color: var(--muted);
     text-decoration: none;
-    font-size: clamp(0.85rem, 1.5vw, 1.1rem);
+    font-size: clamp(1rem, 1.8vw, 2rem);
     transition: color 0.15s;
     display: flex;
     align-items: center;
@@ -1022,12 +1022,12 @@ _INDEX_TEMPLATE = """\
 
   #qr-code canvas, #qr-code img {{
     display: block;
-    width: clamp(120px, 15vw, 200px) !important;
-    height: clamp(120px, 15vw, 200px) !important;
+    width: clamp(120px, 15vw, 280px) !important;
+    height: clamp(120px, 15vw, 280px) !important;
   }}
 
   .qr-url {{
-    font-size: clamp(0.75rem, 1.2vw, 0.95rem);
+    font-size: clamp(0.75rem, 1.2vw, 1.3rem);
     color: var(--amber-dim);
     font-family: monospace;
     word-break: break-all;
