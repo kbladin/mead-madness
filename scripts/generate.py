@@ -1097,13 +1097,16 @@ def build_index(
 ):
     """Generate index.html, baking in all known sessions."""
     current_session = current_session.rstrip("/")
-    current_html_name = current_session + ".html"
+    current_html_name = safe_filename(current_session) + ".html"
     current_html_path = os.path.join(results_dir, current_html_name)
-    current_result_rel = "results/" + current_html_name
+    # hrefs are relative to index.html which sits in site_dir, one level above results/
+    from urllib.parse import quote
+    def to_href(filename):
+        return "results/" + quote(safe_filename(filename))
 
     # Results section
     if os.path.exists(current_html_path):
-        results_html = f'''<a class="btn-results" href="{current_result_rel}">Visa resultat →</a>'''
+        results_html = f'''<a class="btn-results" href="{to_href(current_html_name)}">Visa resultat →</a>'''
     else:
         results_html = '''<p class="not-ready">Väntar på Resultat</p>'''
 
@@ -1114,7 +1117,7 @@ def build_index(
     )
     if prev_entries:
         links = "\n".join(
-            f'''    <li><a href="results/{f}">{f.replace(".html", "").replace("_", " ")}</a></li>'''
+            f'''    <li><a href="{to_href(f)}">{f.replace(".html", "").replace("_", " ")}</a></li>'''
             for f in prev_entries
         )
         prev_html = f'''<div>
@@ -1152,6 +1155,12 @@ FORM_URL = (
 )
 SITE_URL = "https://kbladin.github.io/mead-madness/"
 # ── END CONFIG ──────────────────────────────────────────────────────────────
+
+
+def safe_filename(name: str) -> str:
+    """Normalize folder name to NFC unicode for consistent GitHub Pages URLs."""
+    import unicodedata
+    return unicodedata.normalize("NFC", name)
 
 
 def generate_results(instance_folder: str, instances_dir: str, results_dir: str):
@@ -1207,7 +1216,7 @@ def generate_results(instance_folder: str, instances_dir: str, results_dir: str)
         charts_data_json=json.dumps(charts_data, ensure_ascii=False),
     )
 
-    results_path = os.path.join(results_dir, instance_folder + ".html")
+    results_path = os.path.join(results_dir, safe_filename(instance_folder + ".html"))
     with open(results_path, "w", encoding="utf-8") as f:
         f.write(results_output)
     print(f"Written: {results_path}")
